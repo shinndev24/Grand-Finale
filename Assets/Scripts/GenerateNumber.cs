@@ -1,19 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GenerateNumber : MonoBehaviour
 {
-    [SerializeField]
-    // Start is called before the first frame update
+    [SerializeField] TMPro.TMP_Text numberInScreen;
+    private int randomNumber;
+
     void Start()
     {
-        
+        CallNumber();
     }
-
-    // Update is called once per frame
-    void Update()
+    public void CallNumber()
     {
-        
+        randomNumber = Random.Range(1, 7);
+        Debug.Log("number = " + randomNumber);
+
+        numberInScreen.text = randomNumber.ToString();
     }
 }
