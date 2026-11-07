@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -9,7 +8,7 @@ public class GameManager : MonoBehaviour
     public SlotPresenter presenter;
     public HintManager hints;
     public RoundTimer timer;
-    public GenerateNumber generator;   // ← arrástralo en el inspector
+    public GenerateNumber generator;
     public Animation curtain;
 
     public int landed;
@@ -46,13 +45,7 @@ public class GameManager : MonoBehaviour
         presenter.PlaceCharacters(assignment);
 
         startPosition = hints.ShowHint(characters);
-        k = generator.Roll();   // ← el MISMO numero que se ve en pantalla
-
-        Debug.Log($"--- NUEVA RONDA ---");
-        Debug.Log($"Vivos al empezar: {string.Join(", ", alive)}");
-        Debug.Log($"Reparto (slot -> id): {string.Join(" | ", assignment.Select(kv => $"{kv.Key}->{kv.Value}"))}");
-        Debug.Log($"El jugador es el id {playerId} y esta en el slot {GetSlotOf(playerId)}.");
-        Debug.Log($"Numero de la ronda (k): {k}");
+        k = generator.Roll();
 
         roundDone = false;
         timer.StartTimer(ResolveRound);
@@ -106,10 +99,7 @@ public class GameManager : MonoBehaviour
         roundDone = true;
         timer.StopTimer();
 
-        Debug.Log($"startPosition={startPosition}, k={k}");
-
         landed = EliminateFromSlot(startPosition, k);
-        Debug.Log($"landed={landed}");
         alive.Remove(landed);
 
         if (landed == playerId)
@@ -137,33 +127,18 @@ public class GameManager : MonoBehaviour
     {
         var occupied = new List<int>();
         for (int s = 1; s <= 7; s++)
+        {
             if (assignment.ContainsKey(s) && alive.Contains(assignment[s]))
+            {
                 occupied.Add(s);
-
-        Debug.Log("===== ANTES DEL CONTEO =====");
-        Debug.Log($"Numero de la ronda (k): {step}");
-        Debug.Log($"La pista dice que empieza en el slot: {startSlot}");
-        Debug.Log($"Slots ocupados, en orden: {string.Join(", ", occupied)}");
-        Debug.Log($"Hay {occupied.Count} personajes vivos en total.");
+            }     
+        }       
 
         int startIndex = occupied.FindIndex(s => s >= startSlot);
         if (startIndex < 0) startIndex = 0;
 
-        Debug.Log($"El conteo empieza en el slot {occupied[startIndex]}, que es la posicion 1.");
-        Debug.Log($"Contamos {step} posiciones desde ahi, dando vueltas si hace falta.");
-
         int landedIndex = (startIndex + step - 1) % occupied.Count;
         int landedSlot = occupied[landedIndex];
-
-        Debug.Log($"Prediccion: el conteo cae en el slot {landedSlot}.");
-        Debug.Log($"En ese slot esta el id {assignment[landedSlot]}.");
-        Debug.Log($"Prediccion: muere el id {assignment[landedSlot]}.");
-
-        Debug.Log("===== DESPUES DEL CONTEO =====");
-        Debug.Log($"Resultado real: muere el id {assignment[landedSlot]} en el slot {landedSlot}.");
-        Debug.Log($"Vivos antes: {string.Join(", ", alive)}");
-        Debug.Log($"Vivos despues: {string.Join(", ", alive.FindAll(x => x != assignment[landedSlot]))}");
-        Debug.Log("=============================");
 
         return assignment[landedSlot];
     }

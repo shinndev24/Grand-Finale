@@ -10,7 +10,6 @@ public class GenerateNumber : MonoBehaviour
     {
         randomNumber = Random.Range(1, 8);
         if (numberInScreen != null) numberInScreen.text = randomNumber.ToString();
-        Debug.Log($"[GenerateNumber] Numero sorteado: {randomNumber}");
         return randomNumber;
     }
 
