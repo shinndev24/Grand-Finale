@@ -26,10 +26,16 @@ public class SlotPresenter : MonoBehaviour
             ch.transform.position = slots[slot - 1].position;
         }
     }
+    public void RevealDeath(int id)
+    {
+        byId[id].SetDead(true);
+    }
+
     public void HideCharacter(int id)
     {
         byId[id].SetVisible(false);
     }
+
     public void ShowAll() 
     { 
         foreach (var c in characters) c.SetVisible(true); 

@@ -8,6 +8,14 @@ public class NpcMovement : MonoBehaviour
     public bool isPlayer;
     public string displayName;
 
+    public Sprite deadSprite; 
+    public Sprite normalSprite;
+
+    void Awake()
+    {
+        if (normalSprite == null) normalSprite = image.sprite;
+    }
+
     public void MoveTo(RectTransform slot)
     {
         transform.position = slot.position;
@@ -17,4 +25,8 @@ public class NpcMovement : MonoBehaviour
     {
         image.enabled = visible;
     }
-}
+    public void SetDead(bool squashed)
+    {
+        image.sprite = squashed ? deadSprite : normalSprite;
+    }
+    }
