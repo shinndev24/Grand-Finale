@@ -48,6 +48,27 @@ public class ChoosePosition : MonoBehaviour
             return;
         }
 
+        // Repartir a los vivos, jugador en un slot aleatorio también
+        var freeSlots = new List<int>();
+        for (int s = 1; s <= positions.Count; s++) freeSlots.Add(s);
+        ShuffleList(freeSlots);
+
+        assignment = new Dictionary<int, int>();
+        var npcs = alive.FindAll(id => id != playerId);
+        ShuffleList(npcs);
+
+        // Jugador ocupa el primer slot barajado
+        assignment[freeSlots[0]] = playerId;
+
+        // NPCs en los siguientes slots barajados
+        for (int i = 0; i < npcs.Count; i++)
+            assignment[freeSlots[i + 1]] = npcs[i];
+
+        presenter.PlaceCharacters(assignment);
+
+
+        presenter.PlaceCharacters(assignment);
+
         startPosition = Random.Range(1, positions.Count + 1);
         generator.CallNumber();
         roundDone = false;
@@ -57,59 +78,37 @@ public class ChoosePosition : MonoBehaviour
         Debug.Log($"Ronda: {alive.Count} vivos. Empieza en slot {startPosition}, número {generator.CurrentNumber}");
     }
 
+    // El jugador pulsa un slot: intercambia con quien esté ahí
     public void Choose(int chosenSlot)
     {
         if (roundDone) return;
-        roundDone = true;
-        positionChosen = chosenSlot;
+        if (chosenSlot == GetSlotOf(playerId)) return; // ya está ahí, no hace nada
 
-        foreach (var b in positions) b.interactable = false;
+        int playerSlot = GetSlotOf(playerId);
 
-        // 1. El jugador ocupa el slot elegido
-        assignment = new Dictionary<int, int>();
-        assignment[chosenSlot] = playerId;
-
-        // 2. Los NPCs vivos se barajan en los slots libres
-        var npcs = alive.FindAll(id => id != playerId);
-        ShuffleList(npcs);
-
-        int index = 0;
-        for (int s = 1; s <= positions.Count; s++)
+        if (assignment.ContainsKey(chosenSlot))
         {
-            if (s == chosenSlot) continue;
-            if (index >= npcs.Count) break;
-            assignment[s] = npcs[index++];
+            int other = assignment[chosenSlot];
+            assignment[chosenSlot] = playerId;
+            assignment[playerSlot] = other;
+            Debug.Log($"Intercambio: jugador a slot {chosenSlot}, {other} a slot {playerSlot}.");
+        }
+        else
+        {
+            assignment.Remove(playerSlot);
+            assignment[chosenSlot] = playerId;
+            Debug.Log($"Jugador se mueve al slot vacío {chosenSlot}.");
         }
 
-        // 3. Colocar sin volver a mostrar a nadie
         presenter.PlaceCharacters(assignment);
-
-        StartCoroutine(ResolveAfterDelay());
+        ResolveRound(); // mover = empezar la ronda
     }
 
-    IEnumerator ResolveAfterDelay()
+    int GetSlotOf(int id)
     {
-        yield return new WaitForSeconds(0.6f);
-
-        landed = EliminateFromSlot(startPosition, generator.CurrentNumber);
-
-        presenter.HideCharacter(landed);
-        alive.Remove(landed);
-
-        if (landed == playerId)
-        {
-            Debug.Log("You died!");
-#if UNITY_EDITOR
-            EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-            yield break;
-        }
-
-        Debug.Log($"Sobrevives. Muere {landed}.");
-        yield return new WaitForSeconds(0.4f);
-        StartRound();
+        foreach (var kv in assignment)
+            if (kv.Value == id) return kv.Key;
+        return -1;
     }
 
     int EliminateFromSlot(int startSlot, int k)
@@ -132,5 +131,36 @@ public class ChoosePosition : MonoBehaviour
             int j = Random.Range(0, i + 1);
             (list[i], list[j]) = (list[j], list[i]);
         }
+    }
+
+    public void Confirm()
+    {
+        if (roundDone) return;
+        ResolveRound();
+    }
+
+    void ResolveRound()
+    {
+        if (roundDone) return;
+        roundDone = true;
+        positionChosen = GetSlotOf(playerId);
+
+        foreach (var b in positions) b.interactable = false;
+
+        landed = EliminateFromSlot(startPosition, generator.CurrentNumber);
+
+        presenter.HideCharacter(landed);
+        alive.Remove(landed);
+
+        if (landed == playerId)
+        {
+            Debug.Log("You died!");
+            EditorApplication.isPlaying = false;
+
+            return;
+        }
+
+        Debug.Log($"Sobrevives. Muere {landed}.");
+        StartRound();
     }
 }
