@@ -18,9 +18,16 @@ public class ChoosePosition : MonoBehaviour
 
     private List<int> alive = new();
     private Dictionary<int, int> assignment;
+    private Dictionary<int, int> previousAssignment = new();  // id -> slot de la ronda anterior
+    public Text hintText;   // el Text donde sale la pista
+
+
     private int playerId;
     private int startPosition;
     private bool roundDone;
+    public float decisionTime = 7f;
+    private IEnumerator timerCoroutine;
+    public Text timerText;
 
     void Start()
     {
@@ -48,7 +55,7 @@ public class ChoosePosition : MonoBehaviour
             return;
         }
 
-        // Repartir a los vivos, jugador en un slot aleatorio también
+        // 1. Repartir a los vivos, jugador en un slot aleatorio también
         var freeSlots = new List<int>();
         for (int s = 1; s <= positions.Count; s++) freeSlots.Add(s);
         ShuffleList(freeSlots);
@@ -57,26 +64,40 @@ public class ChoosePosition : MonoBehaviour
         var npcs = alive.FindAll(id => id != playerId);
         ShuffleList(npcs);
 
-        // Jugador ocupa el primer slot barajado
         assignment[freeSlots[0]] = playerId;
-
-        // NPCs en los siguientes slots barajados
         for (int i = 0; i < npcs.Count; i++)
             assignment[freeSlots[i + 1]] = npcs[i];
 
         presenter.PlaceCharacters(assignment);
 
-
-        presenter.PlaceCharacters(assignment);
-
+        // 2. AHORA sortear la posición de salida
         startPosition = Random.Range(1, positions.Count + 1);
+
+        // 3. Leer quién está en la salida y mostrar la pista
+        int hintCharacter = assignment.ContainsKey(startPosition)
+            ? assignment[startPosition]
+            : -1;
+
+        string hint;
+        if (hintCharacter < 0 || !previousAssignment.ContainsKey(hintCharacter))
+            hint = "El conteo empezará en un lugar incierto...";
+        else
+            hint = $"El conteo empezará donde estuvo {GetCharacterName(hintCharacter)} la ronda anterior (slot {previousAssignment[hintCharacter]}).";
+
+        if (hintText != null) hintText.text = hint;
+
         generator.CallNumber();
         roundDone = false;
 
         foreach (var b in positions) b.interactable = true;
 
+        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+        timerCoroutine = Timer();
+        StartCoroutine(timerCoroutine);
+
         Debug.Log($"Ronda: {alive.Count} vivos. Empieza en slot {startPosition}, número {generator.CurrentNumber}");
     }
+
 
     // El jugador pulsa un slot: intercambia con quien esté ahí
     public void Choose(int chosenSlot)
@@ -141,7 +162,9 @@ public class ChoosePosition : MonoBehaviour
 
     void ResolveRound()
     {
+        Debug.Log($"startPosition={startPosition}, assignment keys={string.Join(",", new List<int>(assignment.Keys))}, prevCount={previousAssignment.Count}");
         if (roundDone) return;
+        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
         roundDone = true;
         positionChosen = GetSlotOf(playerId);
 
@@ -151,6 +174,8 @@ public class ChoosePosition : MonoBehaviour
 
         presenter.HideCharacter(landed);
         alive.Remove(landed);
+
+        previousAssignment = new Dictionary<int, int>(assignment);
 
         if (landed == playerId)
         {
@@ -163,4 +188,24 @@ public class ChoosePosition : MonoBehaviour
         Debug.Log($"Sobrevives. Muere {landed}.");
         StartRound();
     }
+
+    IEnumerator Timer()
+    {
+        float t = decisionTime;
+        while (t > 0)
+        {
+            t -= Time.deltaTime;
+            if (timerText != null) timerText.text = Mathf.CeilToInt(t).ToString();
+            yield return null;
+        }
+        ResolveRound();   // se acabó el tiempo: no se mueve, se resuelve
+    }
+
+    string GetCharacterName(int id)
+    {
+        var c = characters.Find(x => x.id == id);
+        return c != null ? c.displayName : "alguien";
+    }
+
+
 }

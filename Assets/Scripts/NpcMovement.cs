@@ -6,6 +6,7 @@ public class NpcMovement : MonoBehaviour
     public Image image;
     public int id;  
     public bool isPlayer;
+    public string displayName;
 
     public void MoveTo(RectTransform slot)
     {
