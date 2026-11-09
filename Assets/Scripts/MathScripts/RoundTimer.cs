@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class RoundTimer : MonoBehaviour
 {
     public float decisionTime = 7f;
-    public Text timerText;
+    public TMPro.TMP_Text timerText;
 
     private IEnumerator coroutine;
     private System.Action onTimeout;

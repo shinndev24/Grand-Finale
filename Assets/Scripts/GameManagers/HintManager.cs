@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HintManager : MonoBehaviour
 {
-    public Text hintText;
+    public TMPro.TMP_Text hintText;
     private Dictionary<int, int> previousAssignment = new();
 
     public int ShowHint(List<NpcMovement> characters)
