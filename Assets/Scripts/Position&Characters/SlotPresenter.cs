@@ -19,12 +19,9 @@ public class SlotPresenter : MonoBehaviour
     {
         foreach (var kv in slotToCharacter)
         {
-            int slot = kv.Key;
             var ch = byId[kv.Value];
             ch.SetVisible(true);
-            var rt = ch.GetComponent<RectTransform>();
-            rt.SetParent(slots[slot - 1], false);
-            rt.anchoredPosition = Vector2.zero;
+            ch.MoveTo(slots[kv.Key - 1]);
         }
     }
 

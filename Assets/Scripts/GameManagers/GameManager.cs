@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,7 +12,7 @@ public class GameManager : MonoBehaviour
     public RoundTimer timer;
     public GenerateNumber generator;
     public Animation curtain;
-
+    public DialogueManager dialogue;
     public int landed;
 
     private List<int> alive = new();
@@ -19,6 +21,7 @@ public class GameManager : MonoBehaviour
     private int startPosition;
     private int k;
     private bool roundDone;
+    private bool revealing;
 
     void Start()
     {
@@ -35,12 +38,13 @@ public class GameManager : MonoBehaviour
         StartRound();
     }
 
-
-    public void StartRound()
+    void StartRound()
     {
         if (alive.Count == 1) { Debug.Log("You won! End."); return; }
 
         if (landed != 0) presenter.HideCharacter(landed);
+
+        revealing = false;
         curtain.Play("Curtain up");
 
         assignment = DealPositions();
@@ -51,6 +55,57 @@ public class GameManager : MonoBehaviour
 
         roundDone = false;
         timer.StartTimer(ResolveRound);
+    }
+
+
+    void ResolveRound()
+    {
+        if (roundDone) return;
+        roundDone = true;
+        timer.StopTimer();
+
+        landed = EliminateFromSlot(startPosition, k);
+        alive.Remove(landed);
+
+        if (landed == playerId)
+        {
+            Debug.Log("You died!");
+            SceneManager.LoadScene("EndGame");
+            return;
+        }
+
+        StartCoroutine(RevealPhase());
+    }
+
+    IEnumerator RevealPhase()
+    {
+        revealing = true;
+
+        curtain.Play("Curtain down");
+        yield return new WaitForSeconds(1f);
+
+        presenter.RevealDeath(landed);
+        curtain.Play("Curtain up");
+        yield return new WaitForSeconds(1f);
+
+        yield return dialogue.PlayLine(PickLine(), 2.5f);
+
+        curtain.Play("Curtain down");
+        yield return new WaitForSeconds(1f);
+
+        hints.RememberPositions(assignment);
+        StartRound();
+    }
+    string PickLine()
+    {
+        string[] lines =
+        {
+            "Guess this one wasn't prepared",
+            "Well? Who wants to go next?",
+            "The show must go on!",
+            "That didn't seem to be good for their stomach.."
+        };
+        return lines[Random.Range(0, lines.Length)];
     }
 
     Dictionary<int, int> DealPositions()
@@ -69,7 +124,7 @@ public class GameManager : MonoBehaviour
 
     public void Choose(int chosenSlot)
     {
-        if (roundDone) return;
+        if (roundDone || revealing) return;
         int playerSlot = GetSlotOf(playerId);
         if (chosenSlot == playerSlot) return;
 
@@ -91,38 +146,8 @@ public class GameManager : MonoBehaviour
 
     public void Confirm()
     {
-        if (roundDone) return;
+        if (roundDone || revealing) return;
         ResolveRound();
-    }
-
-    void ResolveRound()
-    {
-        if (roundDone) return;
-        roundDone = true;
-        timer.StopTimer();
-
-        landed = EliminateFromSlot(startPosition, k);
-        alive.Remove(landed);
-
-        if (landed == playerId)
-        {
-            Debug.Log("You died!");
-            UnityEditor.EditorApplication.isPlaying = false;
-            return;
-        }
-        StartCoroutine(RevealAndNext());
-    }
-
-    IEnumerator RevealAndNext()
-    {
-        curtain.Play("Curtain down");
-        yield return new WaitForSeconds(1f);
-
-        presenter.RevealDeath(landed);
-        yield return new WaitForSeconds(1f);
-
-        hints.RememberPositions(assignment);
-        StartRound();
     }
 
     int EliminateFromSlot(int startSlot, int step)
@@ -133,8 +158,8 @@ public class GameManager : MonoBehaviour
             if (assignment.ContainsKey(s) && alive.Contains(assignment[s]))
             {
                 occupied.Add(s);
-            }     
-        }       
+            }
+        }
 
         int startIndex = occupied.FindIndex(s => s >= startSlot);
         if (startIndex < 0) startIndex = 0;
