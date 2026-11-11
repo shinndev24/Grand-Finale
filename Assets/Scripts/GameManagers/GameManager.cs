@@ -31,8 +31,10 @@ public class GameManager : MonoBehaviour
         alive.Clear();
         foreach (var c in characters) alive.Add(c.id);
         presenter.ShowAll();
+        Canvas.ForceUpdateCanvases();
         StartRound();
     }
+
 
     public void StartRound()
     {
@@ -44,7 +46,7 @@ public class GameManager : MonoBehaviour
         assignment = DealPositions();
         presenter.PlaceCharacters(assignment);
 
-        startPosition = hints.ShowHint(characters);
+        startPosition = hints.ShowHint(characters, alive);
         k = generator.Roll();
 
         roundDone = false;

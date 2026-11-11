@@ -22,9 +22,12 @@ public class SlotPresenter : MonoBehaviour
             int slot = kv.Key;
             var ch = byId[kv.Value];
             ch.SetVisible(true);
-            ch.transform.position = slots[slot - 1].position;
+            var rt = ch.GetComponent<RectTransform>();
+            rt.SetParent(slots[slot - 1], false);
+            rt.anchoredPosition = Vector2.zero;
         }
     }
+
     public void RevealDeath(int id)
     {
         byId[id].SetDead(true);
