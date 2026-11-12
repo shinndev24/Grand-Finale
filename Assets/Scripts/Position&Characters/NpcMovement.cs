@@ -12,12 +12,10 @@ public class NpcMovement : MonoBehaviour
     public Sprite normalSprite;
 
     private RectTransform rt;
-    private Vector2 originalSize;
 
     void Awake()
     {
         rt = GetComponent<RectTransform>();
-        originalSize = rt.sizeDelta;
         if (normalSprite == null) normalSprite = image.sprite;
     }
 
@@ -34,15 +32,5 @@ public class NpcMovement : MonoBehaviour
     public void SetDead(bool squashed)
     {
         image.sprite = squashed ? deadSprite : normalSprite;
-    }
-
-    // Mantiene el tamaño y la escala propios, ignorando los del slot
-    public void KeepOriginalSize()
-    {
-        rt.localScale = Vector3.one;
-        rt.sizeDelta = originalSize;
-        rt.anchorMin = new Vector2(0.5f, 0f);
-        rt.anchorMax = new Vector2(0.5f, 0f);
-        rt.pivot = new Vector2(0.5f, 0f);
     }
 }

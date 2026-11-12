@@ -7,8 +7,6 @@ public class SlotPresenter : MonoBehaviour
     public List<NpcMovement> characters;
 
     private Dictionary<int, NpcMovement> byId = new();
-    public bool HasId(int id) => byId.ContainsKey(id);
-
 
     void Awake()
     {
