@@ -7,8 +7,6 @@ public class NpcMovement : MonoBehaviour
     public int id;
     public bool isPlayer;
     public string displayName;
-
-    public Sprite deadSprite;
     public Sprite normalSprite;
 
     private RectTransform rt;
@@ -29,8 +27,4 @@ public class NpcMovement : MonoBehaviour
         image.enabled = visible;
     }
 
-    public void SetDead(bool squashed)
-    {
-        image.sprite = squashed ? deadSprite : normalSprite;
-    }
 }

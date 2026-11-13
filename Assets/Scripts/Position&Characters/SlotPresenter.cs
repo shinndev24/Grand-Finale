@@ -25,7 +25,7 @@ public class SlotPresenter : MonoBehaviour
 
     public void RevealDeath(int id)
     {
-        byId[id].SetDead(true);
+        byId[id].SetVisible(false);
     }
 
     public void HideCharacter(int id)

@@ -59,8 +59,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Empieza ronda " + round);
         revealing = true; // bloquea los clics mientras se ve la pantalla de ronda
 
-        // Todo se prepara detrás de la pantalla de ronda
-        if (landed != 0) presenter.HideCharacter(landed);
         assignment = DealPositions();
         presenter.PlaceCharacters(assignment);
         startPosition = hints.ShowHint(characters, alive);

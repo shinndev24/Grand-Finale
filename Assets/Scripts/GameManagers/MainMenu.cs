@@ -15,6 +15,11 @@ public class MainMenu : MonoBehaviour
         optionsPanel.SetActive(true);
     }
 
+    public void PlayChallenge()
+    {
+        SceneManager.LoadScene("Challenge");
+    }
+
     public void CloseOptions()
     {
         optionsPanel.SetActive(false);

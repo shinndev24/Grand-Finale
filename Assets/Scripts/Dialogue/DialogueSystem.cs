@@ -9,6 +9,7 @@ public class DialogueSystem : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject panel;
     [SerializeField] private TMP_Text lineText;
+    [SerializeField] private TMP_Text characterName;
     [SerializeField] private Image portrait;
 
     [Header("Diálogos")]
@@ -48,6 +49,7 @@ public class DialogueSystem : MonoBehaviour
 
         foreach (var line in lines)
         {
+            characterName.text = line.speaker;
             portrait.sprite = line.portrait;
             portrait.enabled = line.portrait != null;
 
