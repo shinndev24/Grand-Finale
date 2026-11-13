@@ -56,7 +56,6 @@ public class GameManager : MonoBehaviour
         }
 
         round++;
-        Debug.Log("Empieza ronda " + round);
         revealing = true; // bloquea los clics mientras se ve la pantalla de ronda
 
         assignment = DealPositions();
@@ -84,7 +83,6 @@ public class GameManager : MonoBehaviour
     {
         if (roundDone) return;
         roundDone = true;
-        Debug.Log("ResolveRound llamado");
         timer.StopTimer();
 
         landed = EliminateFromSlot(startPosition, k);
@@ -114,7 +112,6 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         yield return dialogue.PlayLine(PickLine(), 2.5f);
-        Debug.Log("Diálogo terminado");
 
         curtain.Play("Curtain down");
         yield return new WaitForSeconds(1f);
@@ -187,14 +184,11 @@ public class GameManager : MonoBehaviour
                 occupied.Add(s);
             }
         }
-        Debug.Log("Ocupados: " + string.Join(",", occupied) + " | pista: spot " + startSlot + " | numero: " + step);
-
         int startIndex = occupied.FindIndex(s => s >= startSlot);
         if (startIndex < 0) startIndex = 0;
 
         int landedIndex = (startIndex + step - 1) % occupied.Count;
         int landedSlot = occupied[landedIndex];
-        Debug.Log("Empieza en indice " + startIndex + " | cae en spot " + landedSlot);
         return assignment[landedSlot];
     }
 

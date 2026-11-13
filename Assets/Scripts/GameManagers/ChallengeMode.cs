@@ -45,7 +45,6 @@ public class ChallengeMode : MonoBehaviour
         revealing = true;
         k = generator.Roll();
         safeSlot = (startSlot - 1 + k - 1) % 7 + 1;
-        Debug.Log("Inicio: " + startSlot + " | numero: " + k + " | seguro: " + safeSlot);
         hintText.text = round == 1
             ? "Counting starts from spot " + startSlot
             : "Counting starts from the last safe spot";
@@ -70,7 +69,6 @@ public class ChallengeMode : MonoBehaviour
 
     public void Choose(int chosenSlot)
     {
-        Debug.Log("Elegido: " + chosenSlot + " | seguro: " + safeSlot);
         if (roundDone || revealing) return;
         playerSlot = chosenSlot;
         presenter.PlaceCharacters(new Dictionary<int, int> { { playerSlot, playerId } });

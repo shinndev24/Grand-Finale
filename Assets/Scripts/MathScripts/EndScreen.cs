@@ -37,7 +37,6 @@ public class EndScreen : MonoBehaviour
 
     public void GoToMenu()
     {
-        Debug.Log("Botón pulsado");
         SceneManager.LoadScene("MainMenu");
     }
 }
