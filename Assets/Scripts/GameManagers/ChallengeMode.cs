@@ -18,6 +18,7 @@ public class ChallengeMode : MonoBehaviour
     public TMP_Text hintText;
     public float roundScreenTime = 2f;
     public int totalRounds = 7;
+    private bool explanationClosed;
 
     private int playerId;
     private int playerSlot;
@@ -27,6 +28,7 @@ public class ChallengeMode : MonoBehaviour
     private int round = 0;
     private bool roundDone;
     private bool revealing;
+    public GameObject explanationPanel;
 
     void Start()
     {
@@ -36,7 +38,12 @@ public class ChallengeMode : MonoBehaviour
             if (c.id != playerId) presenter.HideCharacter(c.id);
 
         startSlot = Random.Range(1, 8);
-        StartCoroutine(StartRound());
+        StartCoroutine(ShowExplanation());
+    }
+
+    void PlayCurtain(string anim)
+    {
+        curtain.Play(anim);
     }
 
     IEnumerator StartRound()
@@ -59,7 +66,7 @@ public class ChallengeMode : MonoBehaviour
         playerSlot = Random.Range(1, 8);
         presenter.PlaceCharacters(new Dictionary<int, int> { { playerSlot, playerId } });
 
-        curtain.Play("Curtain up");
+        PlayCurtain("Curtain up");
         yield return new WaitForSeconds(1f);
 
         revealing = false;
@@ -115,7 +122,7 @@ public class ChallengeMode : MonoBehaviour
 
         yield return dialogue.PlayLine(PickLine(), 2.5f);
 
-        curtain.Play("Curtain down");
+        PlayCurtain("Curtain down");
         yield return new WaitForSeconds(1f);
 
         yield return StartRound();
@@ -131,5 +138,23 @@ public class ChallengeMode : MonoBehaviour
             "The show must go on!"
         };
         return lines[Random.Range(0, lines.Length)];
+    }
+
+    IEnumerator ShowExplanation()
+    {
+        revealing = true; // bloquea los botones de los spots mientras se lee
+        explanationClosed = false;
+        explanationPanel.SetActive(true);
+
+        while (!explanationClosed)
+            yield return null;
+
+        explanationPanel.SetActive(false);
+        yield return StartRound();
+    }
+
+    public void CloseExplanation()
+    {
+        explanationClosed = true;
     }
 }

@@ -44,6 +44,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(StartRound());
     }
 
+    void PlayCurtain(string anim)
+    {
+        curtain.Play(anim);
+    }
+
     IEnumerator StartRound()
     {
         if (alive.Count == 1)
@@ -56,7 +61,7 @@ public class GameManager : MonoBehaviour
         }
 
         round++;
-        revealing = true; // bloquea los clics mientras se ve la pantalla de ronda
+        revealing = true;
 
         assignment = DealPositions();
         presenter.PlaceCharacters(assignment);
@@ -69,15 +74,13 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(roundScreenTime);
         roundPanel.SetActive(false);
 
-        // Se abre el telón y empieza la selección
-        curtain.Play("Curtain up");
+        PlayCurtain("Curtain up");
         yield return new WaitForSeconds(1f);
 
         revealing = false;
         roundDone = false;
         timer.StartTimer(ResolveRound);
     }
-
 
     void ResolveRound()
     {
@@ -91,7 +94,7 @@ public class GameManager : MonoBehaviour
         if (landed == playerId)
         {
             GameResults.won = false;
-            GameResults.roundsSurvived = round - 1; // la ronda en la que mueres no cuenta
+            GameResults.roundsSurvived = round - 1;
             GameResults.totalRounds = characters.Count - 1;
             SceneManager.LoadScene("EndGame");
             return;
@@ -104,22 +107,22 @@ public class GameManager : MonoBehaviour
     {
         revealing = true;
 
-        curtain.Play("Curtain down");
+        PlayCurtain("Curtain down");
         yield return new WaitForSeconds(1f);
 
         presenter.RevealDeath(landed);
-        curtain.Play("Curtain up");
+        PlayCurtain("Curtain up");
         yield return new WaitForSeconds(1f);
 
         yield return dialogue.PlayLine(PickLine(), 2.5f);
 
-        curtain.Play("Curtain down");
+        PlayCurtain("Curtain down");
         yield return new WaitForSeconds(1f);
 
         hints.RememberPositions(assignment);
         yield return StartRound();
-
     }
+
     string PickLine()
     {
         string[] lines =
